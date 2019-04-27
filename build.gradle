@@ -17,8 +17,8 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
 bootJar {
-    baseName = 'SpringCienamBoot'
-    version =  '0.1.2'
+    baseName = 'SpringCinema'
+    version =  '0.1.3'
 }
 
 repositories {
@@ -29,5 +29,6 @@ targetCompatibility = 1.8
 
 dependencies {
     compile("org.springframework.boot:spring-boot-starter-web")
+compile files('database/hsqldb.jar')
     testCompile("junit:junit")
 }

@@ -1,6 +1,7 @@
 package data;
 
 public class Movie {
+	
 	private final long id;
 	private final String title;
 	
@@ -9,7 +10,12 @@ public class Movie {
 		this.title = title;
 	}
 	
-	public long getID() {return id;}
+	public long getId() {
+		return id;
+	}
 	
-	public String getTitle() {return title;}
+	public String getTitle() {
+		return title;
+	}
+	
 }

@@ -1,32 +1,26 @@
 package data;
 
+import java.time.LocalDateTime;
+import java.time.Month;
+
 
 public class Screening {
 	private final long id;
-	private final long movieId;
+	private final String movieTitle;
 	private final long roomId;
-	private final int hour;
-	private final int day;
-	private final int month;
-	public Screening(long id, long movieId, long roomId) { //TODO: date
+	private final LocalDateTime date;
+	public Screening(long id, String movieTitle, long roomId) { //TODO: date
 		this.id = id;
-		this.movieId = movieId;
+		this.movieTitle = movieTitle;
 		this.roomId = roomId;
-		this.hour = 0;
-		this.day = 0;
-		this.month = 0;
-		
+		date = LocalDateTime.of(2019, Month.APRIL, 28, 16, 30);
 	}
 	
 	public long getId() {return id;}
 	
-	public long getMovieId() {return movieId;}
+	public String getMovieTitle() {return movieTitle;}
 	
 	public long getRoomId() {return roomId;}
-	
-	public int getHour() {return hour;}
-	
-	public int getDay() {return day;}
-	
-	public int getMonth() {return month;}
+
+	public LocalDateTime getDate() {return date;}
 }
