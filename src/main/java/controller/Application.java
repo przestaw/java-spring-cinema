@@ -1,4 +1,4 @@
-package hello;
+package controller;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;

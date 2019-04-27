@@ -1,6 +1,5 @@
 package data;
 
-import java.util.Date;
 
 public class Screening {
 	private final long id;
