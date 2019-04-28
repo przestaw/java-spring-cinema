@@ -1,27 +1,51 @@
 package data;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonRootName;
+
+@JsonRootName(value = "reservation")
 public class Reservation {
-	private final long id;
-	private final long screeningId;
+
+	@JsonProperty(value="screeningId")
+	private final int screeningId;
+	@JsonProperty(value="name")
 	private final String name;
+	@JsonProperty(value="surname")
 	private final String surname;
-	private final int noOfTickets;
-	private final double totalPrice;
-	
-	public Reservation(long id, long screeningId, String name, String surname, int noOfTickets, double totalPrice) {
-		this.id = id;
+	@JsonProperty(value="places")
+	private final List<ResPlace> places;
+	//List<ResPlace> places;
+	 
+	@JsonCreator
+	public Reservation(int screeningId, String name, String surname, ArrayList<ResPlace> places) {
 		this.screeningId = screeningId;
 		this.name = name;
 		this.surname = surname;
-		this.noOfTickets = noOfTickets;
-		this.totalPrice = totalPrice;
+		this.places = places;
 	}
 
-	public long getId() {
-		return id;
+	public Reservation(int screeningId, String name, String surname, ResPlace[] places) {
+		this.screeningId = screeningId;
+		this.name = name;
+		this.surname = surname;
+		this.places = new ArrayList<ResPlace>();
+		this.places.addAll(Arrays.asList(places));
 	}
-
-	public long getScreeningId() {
+	
+	public Reservation(int screeningId, String name, String surname, ResPlace place) {
+		this.screeningId = screeningId;
+		this.name = name;
+		this.surname = surname;
+		this.places = new ArrayList<ResPlace>();
+		this.places.add(place);
+	}
+	
+	public int getScreeningId() {
 		return screeningId;
 	}
 
@@ -33,12 +57,7 @@ public class Reservation {
 		return surname;
 	}
 
-	public int getNoOfTickets() {
-		return noOfTickets;
+	public List<ResPlace> getPlaces() {
+		return places;
 	}
-
-	public double getTotalPrice() {
-		return totalPrice;
-	}
-	
 }
