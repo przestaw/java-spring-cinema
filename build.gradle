@@ -29,6 +29,7 @@ targetCompatibility = 1.8
 
 dependencies {
     compile("org.springframework.boot:spring-boot-starter-web")
-compile files('database/hsqldb.jar')
+    compile("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+	compile files('database/hsqldb.jar')
     testCompile("junit:junit")
 }

@@ -1,34 +1,32 @@
 package data;
 
 import java.time.LocalDateTime;
-import java.time.Month;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Screening {
-	private final int id;
-	private final String movieTitle;
-	private final int roomId;
-	private final LocalDateTime date;
-	
-	public Screening(int id, String movieTitle, int roomId, LocalDateTime date) {
-		this.id = id;
+	@JsonProperty(value="movie")
+	protected final String movieTitle;
+	@JsonProperty(value="room")
+	protected final int roomId;
+	@JsonProperty(value="time")
+	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm", iso = DateTimeFormat.ISO.TIME)
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+	protected final LocalDateTime date;
+
+	public Screening(String movieTitle, int roomId, LocalDateTime date) {
 		this.movieTitle = movieTitle;
 		this.roomId = roomId;
-		this.date = date;
+		this.date = date;;
 	}
 
-	public Screening(int id, String movieTitle, int roomId) { //TODO: date
-		this.id = id;
-		this.movieTitle = movieTitle;
-		this.roomId = roomId;
-		date = LocalDateTime.of(2019, Month.APRIL, 28, 16, 30);
-	}
-	
-	public int getId() {return id;}
-	
 	public String getMovieTitle() {return movieTitle;}
-	
+
 	public int getRoomId() {return roomId;}
 
 	public LocalDateTime getDate() {return date;}
+
 }
