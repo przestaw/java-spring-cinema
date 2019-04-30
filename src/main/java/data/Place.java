@@ -1,5 +1,7 @@
 package data;
-
+/*
+ * author : Przemysław Stawczyk
+ */
 public class Place {
 
 	protected final int row;

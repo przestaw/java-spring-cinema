@@ -1,5 +1,7 @@
 package data;
-
+/*
+ * author : Przemysław Stawczyk
+ */
 public class ResPlace extends Place {
 	private final int type;
 

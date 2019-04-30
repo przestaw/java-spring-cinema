@@ -1,5 +1,7 @@
 package data;
-
+/*
+ * author : Przemysław Stawczyk
+ */
 public class TicketPrice {
 	private final int id;
 	private final double price;

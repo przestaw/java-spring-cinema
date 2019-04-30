@@ -1,5 +1,7 @@
 package data;
-
+/*
+ * author : Przemysław Stawczyk
+ */
 public class SeatPlace extends Place {
 	private final boolean empty;
 	

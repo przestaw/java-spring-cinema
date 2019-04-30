@@ -1,5 +1,7 @@
 package data;
-
+/*
+ * author : Przemysław Stawczyk
+ */
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRootName;
 

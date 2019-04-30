@@ -1,8 +1,10 @@
 package data;
-
+/*
+ * author : Przemysław Stawczyk
+ */
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.time.LocalDateTime;
 import java.sql.Statement;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -25,14 +27,14 @@ public class DatabaseConnection {
 	         //Creating the connection with HSQLDB
 	         conn = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASS);
 	         if (conn!= null){
-	            System.out.println("==: Connection to db created successfully :==\n");
+	            System.out.println("\t*\t==: Connection to db created successfully :==\\t*\\t\n");
 	            
 	         }else{
-	            System.out.println("==:  Problem with creating db connection :==\n");
+	            System.out.println("\t*\t==:  Problem with creating db connection :==\t*\t\n");
 	         }
 	      
 	      }  catch (Exception e) {
-	    	  System.out.println("==:  Problem on HSQLDB server side [propably not running] :==\n"
+	    	  System.out.println("\t*\t==:  Problem on HSQLDB server side [propably not running] :==\t*\t\n"
 	    	  		+ e.getMessage());
 	    	  e.printStackTrace();
 	      }
@@ -45,32 +47,34 @@ public class DatabaseConnection {
         		PreparedStatement stmt = conn.prepareStatement("SELECT MAX(id) FROM reservation;");
             	ResultSet rset2 = stmt.executeQuery();
             	rset2.next();
-            	PreparedStatement stmt2 = conn.prepareStatement("INSERT INTO reservation (id, screen_id, total) values (?, ?, ?)");
+            	PreparedStatement stmt2 = conn.prepareStatement("INSERT INTO reservation (id, screen_id, total) values (?, ?, ?);");
             	stmt2.setInt(1, rset2.getInt(1) + 1);
             	stmt2.setInt(2, newReservation.getScreeningId());
             	stmt2.setDouble(3, total);
             	stmt2.executeUpdate();
             	
-            	PreparedStatement stmt3 = conn.prepareStatement("UPDATE place (RES_ID, TYPE) values (?, ?) WHERE row = ?, column = ?");
+            	PreparedStatement stmt3 = conn.prepareStatement("UPDATE place p SET p.res_id = ?, p.type = ? WHERE p.row = ? AND p.column = ? AND p.screening_id = ?;");
         	    stmt3.setInt(1, rset2.getInt(1) + 1);
             	
             	for(ResPlace iter : newReservation.getPlaces()) {
             		stmt3.setInt(2, iter.getType());
-            		stmt3.setInt(3, iter.getColumn());
-            		stmt3.setInt(4, iter.getRow());
+            		stmt3.setInt(4, iter.getColumn());
+            		stmt3.setInt(3, iter.getRow());
+            		stmt3.setInt(5, newReservation.getScreeningId());
             		stmt3.executeUpdate();		
             	}
             	conn.commit();
             	return (rset2.getInt(1) + 1);
         	}catch(SQLException e){
+        		e.printStackTrace();
         		conn.rollback();
-        		return -1; //no such movie//null; //other error
+        		return -1; 
             }finally{
             	conn.setAutoCommit(true);
             }
     	}catch(SQLException e){
     		e.printStackTrace();
-    		return -1;//failed to create Screening
+    		return -1;//failed to create Reservation
     	}     
     }
     
@@ -114,7 +118,7 @@ public class DatabaseConnection {
             	return new ListScreen(rset2.getInt(1) + 1, newScreening.getMovieTitle(), newScreening.getRoomId(), newScreening.getDate());
         	}catch(SQLException e){
         		conn.rollback();
-        		return new ListScreen(0,"ROLLBACK",-1, null); //no such movie//null; //other error
+        		return null; //no such movie/other error
             }finally{
             	conn.setAutoCommit(true);
             }
@@ -172,10 +176,28 @@ public class DatabaseConnection {
     	ArrayList<ListScreen> ret = new ArrayList<ListScreen>();
     	try {
         	PreparedStatement stmt = conn.prepareStatement("SELECT s.id, m.title, s.timestamp, s.room_id FROM screening s "
-        			+ "INNER JOIN movie m ON s.movie_id = m.id WHERE s.timestamp >= ? AND s.timestamp <= ? "
+        			+ "INNER JOIN movie m ON s.movie_id = m.id WHERE s.timestamp > ? AND s.timestamp < ? "
         			+ "ORDER BY s.timestamp, m.title ;");
         	stmt.setTimestamp(1, Timestamp.valueOf(time.getBegin()));
         	stmt.setTimestamp(2, Timestamp.valueOf(time.getEnd()));
+        	ResultSet rset = stmt.executeQuery();
+            while (rset.next()) {
+            	ret.add(new ListScreen(rset.getInt(1), rset.getString(2), rset.getInt(4), rset.getTimestamp(3).toLocalDateTime()));
+            }
+        }catch(SQLException e) {
+    		e.printStackTrace();
+    	}
+    	return ret;
+    }
+    
+    public List<ListScreen> getScreenings(LocalDateTime begin, LocalDateTime end) {
+    	ArrayList<ListScreen> ret = new ArrayList<ListScreen>();
+    	try {
+    		PreparedStatement stmt = conn.prepareStatement("SELECT s.id, m.title, s.timestamp, s.room_id FROM screening s "
+        			+ "INNER JOIN movie m ON s.movie_id = m.id WHERE s.timestamp > ? AND s.timestamp < ? "
+        			+ "ORDER BY s.timestamp, m.title ;");
+        	stmt.setTimestamp(1, Timestamp.valueOf(begin));
+        	stmt.setTimestamp(2, Timestamp.valueOf(end));
         	ResultSet rset = stmt.executeQuery();
             while (rset.next()) {
             	ret.add(new ListScreen(rset.getInt(1), rset.getString(2), rset.getInt(4), rset.getTimestamp(3).toLocalDateTime()));
@@ -190,6 +212,21 @@ public class DatabaseConnection {
 		ArrayList<SeatPlace> ret = new ArrayList<SeatPlace>();
     	try {
     		PreparedStatement stmt = conn.prepareStatement("select p.res_id, p.row, p.column from place p where p.screening_id = ? order by p.row, p.column;");
+    		stmt.setInt(1, screeningId);
+            ResultSet rset = stmt.executeQuery();
+            while (rset.next()) {
+            	ret.add(new SeatPlace(rset.getInt(2), rset.getInt(3), (rset.getInt(1) < 1)));
+            }
+    	}catch(SQLException e) {
+    		e.printStackTrace();
+    	}
+    	return ret;
+	}
+    
+    public List<SeatPlace> getOccupiedPlaces(int screeningId) {
+    	ArrayList<SeatPlace> ret = new ArrayList<SeatPlace>();
+    	try {
+    		PreparedStatement stmt = conn.prepareStatement("select p.res_id, p.row, p.column from place p where p.screening_id = ? AND p.res_id > 0 order by p.row, p.column;");
     		stmt.setInt(1, screeningId);
             ResultSet rset = stmt.executeQuery();
             while (rset.next()) {
@@ -229,8 +266,28 @@ public class DatabaseConnection {
     	return ret;
     }
     
-    public double getTotal(int reservationId) {
-    	return -1.0;
+    public ListRes getReservation(int reservationId) {
+    	ListRes ret = null;
+    	try {
+        	PreparedStatement stmt = conn.prepareStatement("SELECT  r.name, r.surname, m.title, s.room_id, s.timestamp, r.total\n" + 
+        			"FROM reservation r INNER JOIN screening s on s.id = r.screen_id INNER JOIN movie m ON m.id = s.movie_id\n" + 
+        			"WHERE r.id = ?;");
+        	stmt.setInt(1, reservationId);
+            ResultSet rset = stmt.executeQuery();
+            if(rset.next()) {
+            	ArrayList<ResPlace> temp = new ArrayList<ResPlace>(); 
+                PreparedStatement stmt2 = conn.prepareStatement("SELECT p.row, p.column, p.type FROM place p WHERE p.res_id = ?;");
+                stmt2.setInt(1, reservationId);
+                ResultSet rset2 = stmt2.executeQuery();
+                while (rset2.next()) {
+                  	temp.add(new ResPlace(rset2.getInt(1), rset2.getInt(2), rset2.getInt(3)));
+                }
+                ret = new ListRes(rset.getString(1), rset.getString(2), temp, rset.getString(3), rset.getInt(4), rset.getTimestamp(5).toLocalDateTime(), rset.getDouble(6));
+        	}
+        }catch(SQLException e) {
+    		e.printStackTrace();
+    	}
+    	return ret;
     }
     
     public void exitSQL() {

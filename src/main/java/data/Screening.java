@@ -1,5 +1,7 @@
 package data;
-
+/*
+ * author : Przemysław Stawczyk
+ */
 import java.time.LocalDateTime;
 
 import org.springframework.format.annotation.DateTimeFormat;
@@ -9,13 +11,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Screening {
 	@JsonProperty(value="movie")
-	protected final String movieTitle;
+	private final String movieTitle;
 	@JsonProperty(value="room")
-	protected final int roomId;
+	private final int roomId;
 	@JsonProperty(value="time")
 	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm", iso = DateTimeFormat.ISO.TIME)
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
-	protected final LocalDateTime date;
+	private final LocalDateTime date;
 
 	public Screening(String movieTitle, int roomId, LocalDateTime date) {
 		this.movieTitle = movieTitle;
