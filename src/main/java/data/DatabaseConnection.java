@@ -16,7 +16,8 @@ import java.sql.Timestamp;
 public class DatabaseConnection {
 	private Connection conn;
 	
-	private static final String JDBC_URL = "jdbc:hsqldb:hsql://localhost/cinemaDB";
+	//private static final String JDBC_URL = "jdbc:hsqldb:hsql://localhost/cinemaDB";
+	private static final String JDBC_URL = "jdbc:hsqldb:file:database/hsqldb/cinemaDatabase";
     private static final String JDBC_USER = "SA";
     private static final String JDBC_PASS = "";
 	
@@ -27,14 +28,14 @@ public class DatabaseConnection {
 	         //Creating the connection with HSQLDB
 	         conn = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASS);
 	         if (conn!= null){
-	            System.out.println("\t*\t==: Connection to db created successfully :==\\t*\\t\n");
+	            System.out.println("\n\t*\t==: Connection to db created successfully :==\t*\t\n");
 	            
 	         }else{
-	            System.out.println("\t*\t==:  Problem with creating db connection :==\t*\t\n");
+	            System.out.println("\n\t*\t==:  Problem with creating db connection :==\t*\t\n");
 	         }
 	      
 	      }  catch (Exception e) {
-	    	  System.out.println("\t*\t==:  Problem on HSQLDB server side [propably not running] :==\t*\t\n"
+	    	  System.out.println("\n\t*\t==:  Problem on HSQLDB server side [propably not running] :==\t*\t\n"
 	    	  		+ e.getMessage());
 	    	  e.printStackTrace();
 	      }
@@ -78,8 +79,30 @@ public class DatabaseConnection {
     	}     
     }
     
-    public void addMovie(String Title){
-    	//TODO
+    public Movie addMovie(String title){
+    	try {
+    		conn.setAutoCommit(false);
+        	try {
+        		PreparedStatement stmt = conn.prepareStatement("SELECT MAX(id) FROM movie;");
+            	ResultSet rset2 = stmt.executeQuery();
+            	rset2.next();
+            	PreparedStatement stmt2 = conn.prepareStatement("INSERT INTO movie (id, title) values (?, ?);");
+            	stmt2.setInt(1, rset2.getInt(1) + 1);
+            	stmt2.setString(2, title);
+            	stmt2.executeUpdate();
+            	conn.commit();
+            	return new Movie((rset2.getInt(1) + 1), title);
+        	}catch(SQLException e){
+        		e.printStackTrace();
+        		conn.rollback();
+        		return new Movie(-1, "failed to create movie"); 
+            }finally{
+            	conn.setAutoCommit(true);
+            }
+    	}catch(SQLException e) {
+    		e.printStackTrace();
+    	}
+    	return new Movie(-1, "failed to create movie");
     }
     
     public ListScreen addScreening(Screening newScreening){
@@ -90,7 +113,7 @@ public class DatabaseConnection {
             	stmt.setString(1, newScreening.getMovieTitle());
             	ResultSet rset1 = stmt.executeQuery();
             	if(!rset1.next())
-            		return new ListScreen(0,"NOPE",-1, null); //no such movie
+            		return new ListScreen(0,"No such Movie",-1, null); //no such movie
             	
             	PreparedStatement stmt4 = conn.prepareStatement("SELECT MAX(id) FROM screening;");
             	ResultSet rset2 = stmt4.executeQuery();
@@ -118,7 +141,7 @@ public class DatabaseConnection {
             	return new ListScreen(rset2.getInt(1) + 1, newScreening.getMovieTitle(), newScreening.getRoomId(), newScreening.getDate());
         	}catch(SQLException e){
         		conn.rollback();
-        		return null; //no such movie/other error
+        		return null; //other error
             }finally{
             	conn.setAutoCommit(true);
             }
@@ -145,7 +168,7 @@ public class DatabaseConnection {
     
     public Movie getMovie(int movieId) {
     	try {
-    		PreparedStatement stmt = conn.prepareStatement("SELECT id, title FROM movie WHERE id = ? ORDER BY title;");
+    		PreparedStatement stmt = conn.prepareStatement("SELECT id, title FROM movie WHERE id = ?;");
         	stmt.setInt(1, movieId);
         	ResultSet rset = stmt.executeQuery();
         	if(rset.next()) {
@@ -171,7 +194,7 @@ public class DatabaseConnection {
     	}
     	return ret;
     }
-    
+ /*   
     public List<ListScreen> getScreenings(TimePeriod time) {
     	ArrayList<ListScreen> ret = new ArrayList<ListScreen>();
     	try {
@@ -189,7 +212,7 @@ public class DatabaseConnection {
     	}
     	return ret;
     }
-    
+ */   
     public List<ListScreen> getScreenings(LocalDateTime begin, LocalDateTime end) {
     	ArrayList<ListScreen> ret = new ArrayList<ListScreen>();
     	try {
@@ -283,6 +306,55 @@ public class DatabaseConnection {
                   	temp.add(new ResPlace(rset2.getInt(1), rset2.getInt(2), rset2.getInt(3)));
                 }
                 ret = new ListRes(rset.getString(1), rset.getString(2), temp, rset.getString(3), rset.getInt(4), rset.getTimestamp(5).toLocalDateTime(), rset.getDouble(6));
+        	}
+        }catch(SQLException e) {
+    		e.printStackTrace();
+    	}
+    	return ret;
+    }
+    
+    public List<ListRes> getReservations() {
+    	ArrayList<ListRes> ret = new ArrayList<ListRes>();
+    	try {
+        	PreparedStatement stmt = conn.prepareStatement("SELECT  r.name, r.surname, m.title, s.room_id, s.timestamp, r.total, r.id\n" + 
+        			"FROM reservation r INNER JOIN screening s on s.id = r.screen_id INNER JOIN movie m ON m.id = s.movie_id\n" + 
+        			"WHERE s.timestamp > ?;");
+        	stmt.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            ResultSet rset = stmt.executeQuery();
+            while(rset.next()) {
+            	ArrayList<ResPlace> temp = new ArrayList<ResPlace>(); 
+                PreparedStatement stmt2 = conn.prepareStatement("SELECT p.row, p.column, p.type FROM place p WHERE p.res_id = ?;");
+                stmt2.setInt(1, rset.getInt(7));
+                ResultSet rset2 = stmt2.executeQuery();
+                while (rset2.next()) {
+                  	temp.add(new ResPlace(rset2.getInt(1), rset2.getInt(2), rset2.getInt(3)));
+                }
+                ret.add(new ListRes(rset.getString(1), rset.getString(2), temp, rset.getString(3), rset.getInt(4), rset.getTimestamp(5).toLocalDateTime(), rset.getDouble(6)));
+        	}
+        }catch(SQLException e) {
+    		e.printStackTrace();
+    	}
+    	return ret;
+    }
+    
+    public List<ListRes> getReservations(LocalDateTime begin, LocalDateTime end) {
+    	ArrayList<ListRes> ret = new ArrayList<ListRes>();
+    	try {
+        	PreparedStatement stmt = conn.prepareStatement("SELECT  r.name, r.surname, m.title, s.room_id, s.timestamp, r.total, r.id\n" + 
+        			"FROM reservation r INNER JOIN screening s on s.id = r.screen_id INNER JOIN movie m ON m.id = s.movie_id\n" + 
+        			"WHERE s.timestamp > ? AND s.timestamp < ?;");
+        	stmt.setTimestamp(1, Timestamp.valueOf(begin));
+        	stmt.setTimestamp(2, Timestamp.valueOf(end));
+            ResultSet rset = stmt.executeQuery();
+            while(rset.next()) {
+            	ArrayList<ResPlace> temp = new ArrayList<ResPlace>(); 
+                PreparedStatement stmt2 = conn.prepareStatement("SELECT p.row, p.column, p.type FROM place p WHERE p.res_id = ?;");
+                stmt2.setInt(1, rset.getInt(7));
+                ResultSet rset2 = stmt2.executeQuery();
+                while (rset2.next()) {
+                  	temp.add(new ResPlace(rset2.getInt(1), rset2.getInt(2), rset2.getInt(3)));
+                }
+                ret.add(new ListRes(rset.getString(1), rset.getString(2), temp, rset.getString(3), rset.getInt(4), rset.getTimestamp(5).toLocalDateTime(), rset.getDouble(6)));
         	}
         }catch(SQLException e) {
     		e.printStackTrace();

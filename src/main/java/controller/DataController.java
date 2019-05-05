@@ -26,7 +26,7 @@ public class DataController {
 	// private final String invalid
 	private final String invalidInput = "Invalid input, pleas try again\n";
 	private final String invalidName = "Invalid name/surname, name and surname should be at least 3 characters long and start with capital letter\n";
-	private final String invalidDate = "Invalid date/time, please provide date and time in\n [YEAR]-[MONTH]-[DAY]T[HOUR]:[MINUTES]:[SECONDS]\n format by numbers only\n";
+	private final String invalidDate = "Invalid time, you can only make a reservation at least 15 minutes before the screeninig";
 	private final String invalidOnePlaceGap = "Invalid places, there should not be 1 place left between eserved seats\n";
 	private final String invalidAlreadyReserved = "Invalid places, places already reserved\n";
 	private final String invalidNoPlace = "Invalid place, you cannot reserve no seats\n";
@@ -44,6 +44,13 @@ public class DataController {
 				|| newReservation.getSurname().length() < 3
 				|| Character.isUpperCase(newReservation.getSurname().charAt(1)))
 			return invalidName + " " + newReservation.getName();
+		//check screeninigId
+			//TODO----+  + - + - + - + - + - + - + - *
+			//TODO----+  + - + - + - + - + - + - + - *
+		//check reservation date
+		if(databaseConn.getScreening(newReservation.getScreeningId()).getDate().plusMinutes(15).isBefore(LocalDateTime.now())) {
+			return invalidDate;
+		}
 		//check if reservation is not empty
 		if (newReservation.getPlaces().isEmpty())
 			return invalidNoPlace;
@@ -101,13 +108,13 @@ public class DataController {
 		ret.addAll(databaseConn.getScreenings());
 		return ret;
 	}
-
+/*
 	public List<ListScreen> getScreenings(TimePeriod time) {
 		ArrayList<ListScreen> ret = new ArrayList<ListScreen>();
 		ret.addAll(databaseConn.getScreenings(time));
 		return ret;
 	}
-	
+*/	
 	public List<ListScreen> getScreenings(LocalDateTime beginTime, LocalDateTime endTime) {
 		ArrayList<ListScreen> ret = new ArrayList<ListScreen>();
 		ret.addAll(databaseConn.getScreenings(beginTime, endTime));
@@ -136,11 +143,13 @@ public class DataController {
 		return ret;
 	}
 	
-	public Movie getMovie(int movieId) {
-		Movie ret =  databaseConn.getMovie(movieId);
-		return ret;
+	public Movie addMovie(String title) {
+		return databaseConn.addMovie(title);
 	}
-
+	
+	public Movie getMovie(int movieId) {
+		return databaseConn.getMovie(movieId);
+	}
 
 	public List<Movie> getMovies() {
 		ArrayList<Movie> ret = new ArrayList<Movie>();
@@ -156,5 +165,13 @@ public class DataController {
 
 	public ListRes getReservation(int reservationId) {
 		return databaseConn.getReservation(reservationId);
+	}
+	
+	public List<ListRes> getReservations() {
+		return databaseConn.getReservations();
+	}
+	
+	public List<ListRes> getReservations(LocalDateTime begin, LocalDateTime end) {
+		return databaseConn.getReservations(begin, end);
 	}
 }

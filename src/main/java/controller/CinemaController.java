@@ -21,7 +21,6 @@ import data.Reservation;
 import data.Screening;
 import data.ListRes;
 import data.ListScreen;
-import data.TimePeriod;
 
 @RestController
 public class CinemaController {
@@ -60,8 +59,8 @@ public class CinemaController {
     	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     	LocalDateTime beginTime = LocalDateTime.parse(begin, formatter);
     	LocalDateTime endTime = LocalDateTime.parse(end, formatter);
-    	TimePeriod time = new TimePeriod(beginTime,endTime);
-    	return data.getScreenings(time);
+    	//TimePeriod time = new TimePeriod(beginTime,endTime);
+    	return data.getScreenings(beginTime, endTime);
     }
     
     @RequestMapping(value = "/screening/{screeningId}", method = RequestMethod.GET)
@@ -79,17 +78,34 @@ public class CinemaController {
     	return data.getReservation(reservationId);
     }
     
+    @RequestMapping(value = "/reservation/all", method = RequestMethod.GET)
+    public List<ListRes> showReservation() {
+    	return data.getReservations();
+    }
+    
+    @RequestMapping(value = "/reservation", method = RequestMethod.GET)
+    public List<ListRes> showReservations(@RequestParam(value="begin", required=false) String begin,
+    		@RequestParam(value="end", required=true) String end) {
+    	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    	LocalDateTime beginTime;
+    	if(begin == null) {
+    		beginTime = LocalDateTime.now();
+    	}else {
+    		beginTime = LocalDateTime.parse(begin, formatter);
+    	}
+    	System.out.println(beginTime);
+    	LocalDateTime endTime = LocalDateTime.parse(end, formatter);
+    	return data.getReservations(beginTime, endTime);
+    }
+    
     @RequestMapping(value = "/screening/{screeningId}/reservation", method = RequestMethod.POST)
     public String makeReservation(@PathVariable int screeningId, @RequestBody Reservation newRes) {
         return data.addReservation(newRes);
     }
     
-    @RequestMapping(value = "/movie/new", method = RequestMethod.POST, consumes = "application/json")
-    public Movie addMovie(@RequestBody Movie movie) {
-    	
-    	//TODO + - + - + - + - + - + - + - + - + - + - + - + - + - + - + - + - + - + - + - + - + - + - + - + - + - + - + -
-        
-    	return new Movie(movie.getId(), movie.getTitle());
+    @RequestMapping(value = "/movie/new", method = RequestMethod.POST)
+    public Movie addMovie(@RequestParam(value="title", required=true) String title) {
+    	return data.addMovie(title);
     }
     
     @RequestMapping(value = "/screening/new", method = RequestMethod.POST)
