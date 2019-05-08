@@ -93,7 +93,6 @@ public class CinemaController {
     	}else {
     		beginTime = LocalDateTime.parse(begin, formatter);
     	}
-    	System.out.println(beginTime);
     	LocalDateTime endTime = LocalDateTime.parse(end, formatter);
     	return data.getReservations(beginTime, endTime);
     }

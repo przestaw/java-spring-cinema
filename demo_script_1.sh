@@ -12,10 +12,10 @@ command[5]="curl -X GET localhost:8080/screening/9/emptyplaces"
 desc[5]='list screening nr 9 seats'
 command[6]="curl -H Content-Type:application/json -X POST -d {\"screeningId\":9,\"name\":\"Przemysław\",\"surname\":\"Stawczyk\",\"places\":[{\"row\":1,\"column\":3,\"type\":1},{\"row\":1,\"column\":4,\"type\":3}]} localhost:8080/screening/1/reservation"
 desc[6]='Add reservation for two seats [name with polish character ł]'
-command[6]='curl -X GET localhost:8080/reservation/3'
-desc[6]='Test : res_id = 3'
-command[7]="curl -X GET localhost:8080/screening/9/emptyplaces"
-desc[7]='list screening nr 9 seats again'
+command[7]='curl -X GET localhost:8080/reservation/3'
+desc[7]='Test : res_id = 3'
+command[8]="curl -X GET localhost:8080/screening/9/emptyplaces"
+desc[8]='list screening nr 9 seats again'
 
 echo -n "Example use case n.o. 1"
 printf '\n\n'

@@ -48,10 +48,12 @@ public class DatabaseConnection {
         		PreparedStatement stmt = conn.prepareStatement("SELECT MAX(id) FROM reservation;");
             	ResultSet rset2 = stmt.executeQuery();
             	rset2.next();
-            	PreparedStatement stmt2 = conn.prepareStatement("INSERT INTO reservation (id, screen_id, total) values (?, ?, ?);");
+            	PreparedStatement stmt2 = conn.prepareStatement("INSERT INTO reservation (id, screen_id, total, name, surname) values (?, ?, ?, ?, ?);");
             	stmt2.setInt(1, rset2.getInt(1) + 1);
             	stmt2.setInt(2, newReservation.getScreeningId());
             	stmt2.setDouble(3, total);
+            	stmt2.setString(4, newReservation.getName());
+            	stmt2.setString(5, newReservation.getSurname());
             	stmt2.executeUpdate();
             	
             	PreparedStatement stmt3 = conn.prepareStatement("UPDATE place p SET p.res_id = ?, p.type = ? WHERE p.row = ? AND p.column = ? AND p.screening_id = ?;");
@@ -141,13 +143,13 @@ public class DatabaseConnection {
             	return new ListScreen(rset2.getInt(1) + 1, newScreening.getMovieTitle(), newScreening.getRoomId(), newScreening.getDate());
         	}catch(SQLException e){
         		conn.rollback();
-        		return null; //other error
+        		return new ListScreen(-1, "failed to create", -1, null); //other error
             }finally{
             	conn.setAutoCommit(true);
             }
     	}catch(SQLException e){
     		e.printStackTrace();
-    		return null;//failed to create Screening
+    		return new ListScreen(-1, "failed to create", -1, null);//failed to create Screening
     	}     
     }
     
@@ -194,25 +196,7 @@ public class DatabaseConnection {
     	}
     	return ret;
     }
- /*   
-    public List<ListScreen> getScreenings(TimePeriod time) {
-    	ArrayList<ListScreen> ret = new ArrayList<ListScreen>();
-    	try {
-        	PreparedStatement stmt = conn.prepareStatement("SELECT s.id, m.title, s.timestamp, s.room_id FROM screening s "
-        			+ "INNER JOIN movie m ON s.movie_id = m.id WHERE s.timestamp > ? AND s.timestamp < ? "
-        			+ "ORDER BY s.timestamp, m.title ;");
-        	stmt.setTimestamp(1, Timestamp.valueOf(time.getBegin()));
-        	stmt.setTimestamp(2, Timestamp.valueOf(time.getEnd()));
-        	ResultSet rset = stmt.executeQuery();
-            while (rset.next()) {
-            	ret.add(new ListScreen(rset.getInt(1), rset.getString(2), rset.getInt(4), rset.getTimestamp(3).toLocalDateTime()));
-            }
-        }catch(SQLException e) {
-    		e.printStackTrace();
-    	}
-    	return ret;
-    }
- */   
+
     public List<ListScreen> getScreenings(LocalDateTime begin, LocalDateTime end) {
     	ArrayList<ListScreen> ret = new ArrayList<ListScreen>();
     	try {
