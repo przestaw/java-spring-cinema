@@ -11,7 +11,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ListRes{
-
+	
+	@JsonProperty(value="id")
+	private final int id;
 	@JsonProperty(value="name")
 	private final String name;
 	@JsonProperty(value="surname")
@@ -29,8 +31,9 @@ public class ListRes{
 	@JsonProperty(value="reserved places")
 	private final List<ResPlace> places;
 	
-	public ListRes(String name, String surname, List<ResPlace> places, String movieTitle, int roomId,
+	public ListRes(int id, String name, String surname, List<ResPlace> places, String movieTitle, int roomId,
 			LocalDateTime date, double totalCost) {
+		this.id = id;
 		this.name = name;
 		this.surname = surname;
 		this.places = places;
@@ -38,6 +41,10 @@ public class ListRes{
 		this.roomId = roomId;
 		this.date = date;
 		this.totalCost = totalCost;
+	}
+
+	public int getId() {
+		return id;
 	}
 
 	public String getName() {

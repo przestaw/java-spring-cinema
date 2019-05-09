@@ -1,3 +1,5 @@
 #!/bin/bash
 
-gradle build && java -jar ./build/libs/SpringCinema-0.3.0.jar
+gradle build
+cp ./build/libs/SpringCinema-0.5.1.jar ./SpringCinema.jar
+java -jar ./SpringCinema.jar

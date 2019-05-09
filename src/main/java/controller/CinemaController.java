@@ -97,8 +97,8 @@ public class CinemaController {
     	return data.getReservations(beginTime, endTime);
     }
     
-    @RequestMapping(value = "/screening/{screeningId}/reservation", method = RequestMethod.POST)
-    public String makeReservation(@PathVariable int screeningId, @RequestBody Reservation newRes) {
+    @RequestMapping(value = "/screening/reservation", method = RequestMethod.POST)
+    public String makeReservation(@RequestBody Reservation newRes) {
         return data.addReservation(newRes);
     }
     

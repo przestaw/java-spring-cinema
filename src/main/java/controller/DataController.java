@@ -76,10 +76,8 @@ public class DataController {
 			}
 		}
 		//check for one place left
-			//TODO----+  + - + - + - + - + - + - + - *
 		if(this.checkForOneSeatGap(reservationPlaces, occupiedPlaces))
 			return invalidOnePlaceGap;
-			//TODO----+  + - + - + - + - + - + - + - *
 		//calculate price
 		HashMap<Integer, Double> prices = (HashMap<Integer, Double>)this.getMapPrices();
 		try {
@@ -154,7 +152,7 @@ public class DataController {
 				if(places.get(i).get(j) == null) {
 					counter++;
 				}else {
-					if(counter == 1 ) {
+					if(counter == 1 && j > 2) {
 						return true;
 					}else {
 						counter = 0;

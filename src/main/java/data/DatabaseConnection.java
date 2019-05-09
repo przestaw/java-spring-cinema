@@ -276,7 +276,7 @@ public class DatabaseConnection {
     public ListRes getReservation(int reservationId) {
     	ListRes ret = null;
     	try {
-        	PreparedStatement stmt = conn.prepareStatement("SELECT  r.name, r.surname, m.title, s.room_id, s.timestamp, r.total\n" + 
+        	PreparedStatement stmt = conn.prepareStatement("SELECT  r.name, r.surname, m.title, s.room_id, s.timestamp, r.total, r.id\n" + 
         			"FROM reservation r INNER JOIN screening s on s.id = r.screen_id INNER JOIN movie m ON m.id = s.movie_id\n" + 
         			"WHERE r.id = ?;");
         	stmt.setInt(1, reservationId);
@@ -289,7 +289,7 @@ public class DatabaseConnection {
                 while (rset2.next()) {
                   	temp.add(new ResPlace(rset2.getInt(1), rset2.getInt(2), rset2.getInt(3)));
                 }
-                ret = new ListRes(rset.getString(1), rset.getString(2), temp, rset.getString(3), rset.getInt(4), rset.getTimestamp(5).toLocalDateTime(), rset.getDouble(6));
+                ret = new ListRes(rset.getInt(7), rset.getString(1), rset.getString(2), temp, rset.getString(3), rset.getInt(4), rset.getTimestamp(5).toLocalDateTime(), rset.getDouble(6));
         	}
         }catch(SQLException e) {
     		e.printStackTrace();
@@ -302,7 +302,7 @@ public class DatabaseConnection {
     	try {
         	PreparedStatement stmt = conn.prepareStatement("SELECT  r.name, r.surname, m.title, s.room_id, s.timestamp, r.total, r.id\n" + 
         			"FROM reservation r INNER JOIN screening s on s.id = r.screen_id INNER JOIN movie m ON m.id = s.movie_id\n" + 
-        			"WHERE s.timestamp > ?;");
+        			"WHERE s.timestamp > ? ORDER BY s.timestamp;");
         	stmt.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
             ResultSet rset = stmt.executeQuery();
             while(rset.next()) {
@@ -313,7 +313,7 @@ public class DatabaseConnection {
                 while (rset2.next()) {
                   	temp.add(new ResPlace(rset2.getInt(1), rset2.getInt(2), rset2.getInt(3)));
                 }
-                ret.add(new ListRes(rset.getString(1), rset.getString(2), temp, rset.getString(3), rset.getInt(4), rset.getTimestamp(5).toLocalDateTime(), rset.getDouble(6)));
+                ret.add(new ListRes(rset.getInt(7), rset.getString(1), rset.getString(2), temp, rset.getString(3), rset.getInt(4), rset.getTimestamp(5).toLocalDateTime(), rset.getDouble(6)));
         	}
         }catch(SQLException e) {
     		e.printStackTrace();
@@ -326,7 +326,7 @@ public class DatabaseConnection {
     	try {
         	PreparedStatement stmt = conn.prepareStatement("SELECT  r.name, r.surname, m.title, s.room_id, s.timestamp, r.total, r.id\n" + 
         			"FROM reservation r INNER JOIN screening s on s.id = r.screen_id INNER JOIN movie m ON m.id = s.movie_id\n" + 
-        			"WHERE s.timestamp > ? AND s.timestamp < ?;");
+        			"WHERE s.timestamp > ? AND s.timestamp < ? ORDER BY s.timestamp;");
         	stmt.setTimestamp(1, Timestamp.valueOf(begin));
         	stmt.setTimestamp(2, Timestamp.valueOf(end));
             ResultSet rset = stmt.executeQuery();
@@ -338,7 +338,7 @@ public class DatabaseConnection {
                 while (rset2.next()) {
                   	temp.add(new ResPlace(rset2.getInt(1), rset2.getInt(2), rset2.getInt(3)));
                 }
-                ret.add(new ListRes(rset.getString(1), rset.getString(2), temp, rset.getString(3), rset.getInt(4), rset.getTimestamp(5).toLocalDateTime(), rset.getDouble(6)));
+                ret.add(new ListRes(rset.getInt(7), rset.getString(1), rset.getString(2), temp, rset.getString(3), rset.getInt(4), rset.getTimestamp(5).toLocalDateTime(), rset.getDouble(6)));
         	}
         }catch(SQLException e) {
     		e.printStackTrace();
